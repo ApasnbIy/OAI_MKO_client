@@ -6,6 +6,7 @@ import ta1_usb_client_widget
 import configparser
 import parc_data
 import os
+import oai_mko
 
 
 class Widget(QtWidgets.QFrame, mko_unit_widget.Ui_Frame):
@@ -17,6 +18,7 @@ class Widget(QtWidgets.QFrame, mko_unit_widget.Ui_Frame):
         super().__init__(parent)
         self.setupUi(self)  # Это нужно для инициализации нашего дизайна
         # инициаллизация МКО #
+        self.mko = None
         self.num = 0
         self.name = "..."
         for key in sorted(kw):
@@ -29,8 +31,8 @@ class Widget(QtWidgets.QFrame, mko_unit_widget.Ui_Frame):
             else:
                 pass
         #
-        self.ta1_mko = ta1_mko.Device()
-        self.ta1_mko.init()
+
+        #print(self.mko.state)
         # конфигурация
         self.cfg_dict = {"addr": "1",
                          "subaddr": "1",
@@ -52,6 +54,12 @@ class Widget(QtWidgets.QFrame, mko_unit_widget.Ui_Frame):
         #
         self.label.setText("%d" % self.num)
         self.ActionButton.clicked.connect(self.action)
+        #
+        self.set_interface(interface=self.mko)
+
+    def set_interface(self, interface=None):
+        self.mko = interface
+        pass
 
     def set_num(self, n):
         self.num = n
@@ -104,61 +112,64 @@ class Widget(QtWidgets.QFrame, mko_unit_widget.Ui_Frame):
         return self.cfg_dict
 
     def write(self):
-        self.connect()
-        self.ta1_mko.send_to_rt(
-            (int(self.AddrSpinBox.value()), int(self.SubaddrSpinBox.value()),
-             self.get_data(), int(self.LengSpinBox.value())))
-        self.AWLine.setText("0x{:04X}".format(self.ta1_mko.answer_word))
-        self.CWLine.setText("0x{:04X}".format(self.ta1_mko.command_word))
+
+        self.mko.send_to_rt(
+            (int(self.AddrSpinBox.value())), int(self.SubaddrSpinBox.value()),
+             self.get_data(), int(self.LengSpinBox.value()))
+        self.AWLine.setText("0x{:04X}".format(self.mko.answer_word))
+        self.CWLine.setText("0x{:04X}".format(self.mko.command_word))
         self.state_check()
-        self.ta1_mko.disconnect()
+        self.mko.disconnect()
         pass
 
     def read(self):
-        self.connect()
-        self.data = self.ta1_mko.read_from_rt(int(self.AddrSpinBox.value()), int(self.SubaddrSpinBox.value()),
+        self.data = self.mko.read_from_rt(int(self.AddrSpinBox.value()), int(self.SubaddrSpinBox.value()),
                                             int(self.LengSpinBox.value()))
         self.insert_data(self.data)
-        self.AWLine.setText("0x{:04X}".format(self.ta1_mko.answer_word))
-        self.CWLine.setText("0x{:04X}".format(self.ta1_mko.command_word))
+        self.AWLine.setText("0x{:04X}".format(self.mko.answer_word))
+        self.CWLine.setText("0x{:04X}".format(self.mko.command_word))
         self.state_check()
-        self.ta1_mko.disconnect()
+        self.mko.disconnect()
         pass
 
     def ctrl(self):
-        self.connect()
-        self.data = self.ta1_mko.send_cntrl_command(int(self.AddrSpinBox.value()), int(self.SubaddrSpinBox.value()),
+        self.data = self.mko.send_cntrl_command(int(self.AddrSpinBox.value()), int(self.SubaddrSpinBox.value()),
                                             int(self.LengSpinBox.value()))
         self.insert_data(self.data)
-        self.AWLine.setText("0x{:04X}".format(self.ta1_mko.answer_word))
-        self.CWLine.setText("0x{:04X}".format(self.ta1_mko.command_word))
+        self.AWLine.setText("0x{:04X}".format(self.mko.answer_word))
+        self.CWLine.setText("0x{:04X}".format(self.mko.command_word))
         self.state_check()
-        self.ta1_mko.disconnect()
+        self.mko.disconnect()
         pass
 
     def action(self):
-        if self.RWBox.currentText() in "Чтение":  # read
-            self.read()
-            self.table_data = parc_data.frame_parcer(self.data)
-        elif self.RWBox.currentText() in "Запись":
-            self.write()
-            self.table_data = parc_data.frame_parcer(self.data)
+        self.connect()
+        if self.state == 1:
+            self.state_check()
+            pass
         else:
-            self.ctrl()
-        pass
+            if self.RWBox.currentText() in "Чтение":  # read
+                self.read()
+                self.table_data = parc_data.frame_parcer(self.data)
+            elif self.RWBox.currentText() in "Запись":
+                self.write()
+                self.table_data = parc_data.frame_parcer(self.data)
+            else:
+                self.ctrl()
+            pass
 
     def state_check(self):
-        self.state = self.ta1_mko.state
+        self.state = self.mko.state
         if self.state == 1:
-            self.StatusLabel.setText("TA1-USB")
+            self.StatusLabel.setText(self.mko.name)
             self.StatusLabel.setStyleSheet('QLabel {background-color: orangered;}')
         elif self.state == 2:
             self.StatusLabel.setText("Аппаратура")
             self.StatusLabel.setStyleSheet('QLabel {background-color: coral;}')
-        elif self.ta1_mko.bus_state == 1:
+        elif self.mko.bus_state == 1:
             self.StatusLabel.setText("Линия 1")
             self.StatusLabel.setStyleSheet('QLabel {background-color: coral;}')
-        elif self.ta1_mko.bus_state == 2:
+        elif self.mko.bus_state == 2:
             self.StatusLabel.setText("Линия 2")
             self.StatusLabel.setStyleSheet('QLabel {background-color: coral;}')
         elif self.state == 0:
@@ -167,7 +178,7 @@ class Widget(QtWidgets.QFrame, mko_unit_widget.Ui_Frame):
         pass
 
     def connect(self):
-        self.state = self.ta1_mko.init()
+        self.state = self.mko.connect()
         return self.state
 
     def insert_data(self, data):
@@ -197,6 +208,15 @@ class Widgets(QtWidgets.QVBoxLayout):
         self.parent = parent
         self.list = []
         self.table_data = []
+
+        self.set_interface_to_units()
+        self.interface_method = None
+        pass
+
+    def set_interface_to_units(self, interface=None):
+        for unit in self.list:
+            unit.set_interface(interface=interface)
+            self.interface_method = interface
         pass
 
     def add_unit(self):
@@ -204,6 +224,7 @@ class Widgets(QtWidgets.QVBoxLayout):
         self.list.append(widget_to_add)
         self.addWidget(widget_to_add)
         widget_to_add.ActionButton.clicked.connect(self.multi_action)
+        self.set_interface_to_units(interface=self.interface_method)
         pass
 
     def multi_action(self):
@@ -268,8 +289,26 @@ class MainWindow(QtWidgets.QWidget, ta1_usb_client_widget.Ui_Form):
         self.DltAllUnitsPButt.clicked.connect(self.units_widgets.delete_all_units)
         self.LoadCfgPButt.clicked.connect(self.load_cfg)
         self.SaveCfgPButt.clicked.connect(self.save_cfg)
+        self.InterfaceChngButt.clicked.connect(self.set_interface)
         #
         self.load_init_cfg()
+        #
+        self.interfaces = [ta1_mko.Device(), oai_mko.Device()]
+        [interface.init() for interface in self.interfaces]
+        self.interface_number = 0
+        self.set_interface()
+
+    def set_interface_chng_button_name(self):
+        self.InterfaceChngButt.setText(self.interfaces[self.interface_number].name)
+        pass
+
+    def set_interface(self):
+        self.set_interface_chng_button_name()
+        self.units_widgets.set_interface_to_units(interface=self.interfaces[self.interface_number])
+        self.interface_number += 1
+        self.interface_number %= len(self.interfaces)
+
+        pass
 
     def dlt_unit(self):
         n = self.DltUnitNumSBox.value()
