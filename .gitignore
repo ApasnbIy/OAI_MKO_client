@@ -1,0 +1,11 @@
+.idea
+.git
+__pycache__
+oai_kpa_mko/__pycache__
+oai_kpa_mko/venv
+oai_kpa_mko/.idea
+dist
+commands.json
+config.json
+tests
+poetry.lock

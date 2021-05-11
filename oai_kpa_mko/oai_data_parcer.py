@@ -7,7 +7,7 @@
 #     table_list - список подсписков (подсписок - ["Имя", "Значение"])
 
 import threading
-import crc16
+from . import crc16
 
 # замок для мультипоточного запроса разбора данных
 data_lock = threading.Lock()
