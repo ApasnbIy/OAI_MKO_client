@@ -16,7 +16,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.semantic_release]
 version_variable = [
-    "oai_modbus/__init__.py:__version__",
+    "oai_kpa_mko/__init__.py:__version__",
     "pyproject.toml:version"
 ]
 branch = "master"
