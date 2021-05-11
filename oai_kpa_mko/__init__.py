@@ -1,3 +1,5 @@
+__version__ = '0.1.0'
+
 from .mko_unit import *
 from .mko_unit_widget import *
 from .oai_data_parcer import *
