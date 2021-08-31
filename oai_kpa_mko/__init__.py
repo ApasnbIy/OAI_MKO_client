@@ -1,5 +1,6 @@
 __version__ = '0.2.0'
-
+print('Do not forget to use 32bit version of python interpreter!')
+# print('Your python\'s version is ')
 from .mko_unit import *
 from .mko_unit_widget import *
 from .oai_data_parcer import *

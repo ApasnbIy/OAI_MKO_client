@@ -305,10 +305,10 @@ class MainWindow(QtWidgets.QWidget, ta1_usb_client_widget.Ui_Form):
         #
         self.load_init_cfg()
         #
-        self.interfaces = [ta1_mko.Device(), oai_mko.Device()]
-        [interface.init() for interface in self.interfaces]
-        self.interface_number = 0
-        self.set_interface()
+        # self.interfaces = [ta1_mko.Device(), oai_mko.Device()]
+        # [interface.init() for interface in self.interfaces]
+        # self.interface_number = 0
+        # self.set_interface()
 
     def set_interface_chng_button_name(self):
         self.InterfaceChngButt.setText(self.interfaces[self.interface_number].name)
