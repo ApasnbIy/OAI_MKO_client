@@ -1,4 +1,4 @@
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 print('Do not forget to use 32bit version of python interpreter!')
 # print('Your python\'s version is ')
 from .mko_unit import *
