@@ -1,4 +1,5 @@
 .idea
+venv
 .git
 __pycache__
 oai_kpa_mko/__pycache__
