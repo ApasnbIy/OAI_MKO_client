@@ -87,7 +87,14 @@ class Device:
             with open("cfg\\" + self.uniq_name + ".json", 'r', encoding="utf-8") as cfg_file:
                 loaded_cfg = json.load(cfg_file)
         except FileNotFoundError:
-            loaded_cfg = self.default_cfg
+            # loaded_cfg = self.default_cfg
+            loaded_cfg = json.loads("""{
+                                "core": {
+                                    "serial_num": "206A3694424D",
+                                    "widget": "False"
+                                },
+                                "user": {}
+                            }""")
         return loaded_cfg
 
     def init(self):

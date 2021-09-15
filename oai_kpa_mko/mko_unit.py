@@ -1,12 +1,24 @@
 import sys
-from PyQt5 import QtWidgets, QtCore
-import mko_unit_widget
-import ta1_mko
-import ta1_usb_client_widget
-import configparser
-import parc_data
 import os
-import oai_mko
+from PyQt5 import QtWidgets, QtCore
+import configparser
+# from . import mko_unit_widget
+# from . import ta1_mko
+# from . import ta1_usb_client_widget
+# from . import parc_data
+# from . import oai_mko
+if __name__ != '__main__':
+    from . import mko_unit_widget
+    from . import ta1_mko
+    from . import ta1_usb_client_widget
+    from . import parc_data
+    from . import oai_mko
+else:
+    import mko_unit_widget
+    import ta1_mko
+    import ta1_usb_client_widget
+    import parc_data
+    import oai_mko
 
 
 class Widget(QtWidgets.QFrame, mko_unit_widget.Ui_Frame):
@@ -299,6 +311,9 @@ class MainWindow(QtWidgets.QWidget, ta1_usb_client_widget.Ui_Form):
         self.set_interface()
 
     def set_interface_chng_button_name(self):
+        # print(self.interface_number)
+        # print(self.interfaces)
+        # print(self.interfaces[self.interface_number])
         self.InterfaceChngButt.setText(self.interfaces[self.interface_number].name)
         pass
 
